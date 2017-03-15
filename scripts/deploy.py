@@ -2,7 +2,13 @@
 import os
 import sys
 import boto3
+import argparse
 
 if __name__ == '__main__':
-	pass
+	parser = argparse.ArgumentParser()
 
+	# TODO arguments
+
+	args = parser.parse_args()
+
+	# TODO deployment
