@@ -4,8 +4,8 @@ EBS: Flask server with authentication through DynamoDB
 This code shows how to deploy a Flask server on AWS' Elastic Beanstalk. This server provides authentication through DynamoDB. It also implement token based authentication.
 
 This server uses two tables from DynamoDB:
- * `services` : to store information about service (secrets, ...)
- * `identities` : to store information about users of each service (priviledges, ...)
+ * `services` : to store information about service (secrets, ...). It has one key `service`.
+ * `identities` : to store information about users of each service (priviledges, ...). It has two keys: `service` and `user`.
 
 ## Getting Started
 
@@ -30,13 +30,13 @@ export SERVER_SERVICE=name-of-the-service
 
 # Configure AWS profile and region
 export AWS_PROFILE=your-aws-profile # defaults to system default
-export AWS_REGION=us-east-1 # defaults to profile's default
+export AWS_REGION=us-east-1 # defaults to us-east-1
 
 # Install server in DynamoDB tables (creates a root user)
-python -m setup.db $SERVER_SERVICE --secret-password secret-used-to-salt-password --secret-token secret-used-for-auth-tokens
+python -m setup.db $SERVER_SERVICE --password-secret your-secret-1 --token-secret your-secret-2 --admin-username your-username --admin-password your-password
 
 # Launch server (Ctrl+C to quit)
-python -m server.wsgi -debug
+python wsgi.py
 
 # Quit VirtualEnv
 deactivate

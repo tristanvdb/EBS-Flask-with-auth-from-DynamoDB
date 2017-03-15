@@ -1,6 +1,6 @@
 
 import flask
-from app import application
+from EBauth import application
 
 ## Test Functions
 

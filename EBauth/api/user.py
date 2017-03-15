@@ -1,6 +1,6 @@
 
 import flask
-from app import application
+from EBauth import application
 
 @application.route('/api/user/token', methods = ['POST'])
 @application.authenticated
