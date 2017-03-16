@@ -20,7 +20,7 @@ export AWS_REGION=$3
 
 [ -z $AWS_REGION ] && AWS_REGION='us-east-1'
 
-python $basedir/scripts/create.py $SERVER_SERVICE --password-secret your-secret-1 --token-secret your-secret-2 --admin-password password
+python $basedir/scripts/create.py --service-name $SERVER_SERVICE
 
 python $basedir/scripts/wsgi.py
 

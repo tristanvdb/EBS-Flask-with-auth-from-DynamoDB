@@ -11,8 +11,8 @@ if __name__ == "__main__":
 
 	args = parser.parse_args()
 
-	importlib.import_module('EBauth.api.user')
-	importlib.import_module('EBauth.api.test')
+	for module in EBauth.application.service['modules']:
+		importlib.import_module(module)
 
 	EBauth.application.run(debug=True)
 

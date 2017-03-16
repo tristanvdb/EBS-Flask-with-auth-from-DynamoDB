@@ -3,50 +3,38 @@ EBS: Flask server with authentication through DynamoDB
 
 This code shows how to deploy a Flask server on AWS' Elastic Beanstalk. This server provides authentication through DynamoDB. It also implement token based authentication.
 
-This server uses two tables from DynamoDB:
+## Getting Started
+
+### AWS setup
+
+Create the table in DynamoDB:
  * `services` : to store information about service (secrets, ...). It has one key `service`.
  * `identities` : to store information about users of each service (priviledges, ...). It has two keys: `service` and `user`.
 
-## Getting Started
+### Create a service
 
-### Local Tests
-
-#### Start the server locally
-
+Simply run:
 ```
-# Go to clone repository
-cd EBS-Flask-with-auth-from-DynamoDB
+python scripts/create.py --service-name your-service-name
+```
+You might need to set the AWS\_PROFILE and AWS\_REGION environment variables.
 
-# Setup virtual environment
-virtualenv .venv
-source .venv/bin/activate
-pip install -r requirements.txt
 
-# Set Python path
-export PYTHONPATH=$(pwd)
-
-# Configure your service
-export SERVER_SERVICE=name-of-the-service
-
-# Configure AWS profile and region
-export AWS_PROFILE=your-aws-profile # defaults to system default
-export AWS_REGION=us-east-1 # defaults to us-east-1
-
-# Install server in DynamoDB tables (creates a root user)
-python -m setup.db $SERVER_SERVICE --password-secret your-secret-1 --token-secret your-secret-2 --admin-username your-username --admin-password your-password
-
-# Launch server (Ctrl+C to quit)
-python wsgi.py
-
-# Quit VirtualEnv
-deactivate
+Checkout the service configuration (includes randomly generated administrator password):
+```
+cat your-service-name.txt
 ```
 
-#### Try
+### Local service
 
-The first thing to do is create a admin user and remove root user:
- * `curl -u root:secret-used-to-salt-password -d "user=username&password=password&priviledges=user,admin" -X POST http://127.0.0.1:5000/api/user/new`
- * `curl -u username:password -d "user=root" -X POST http://127.0.0.1:5000/api/user/delete`
+```
+export PYTHONPATH=$(pwd):$PYTHONPATH # EBauth top directory
+export SERVER_SERVICE=your-service-name
+python scripts/wsgi.py
+```
+You might need to set the AWS\_PROFILE and AWS\_REGION environment variables.
+
+### Try
 
 Test public access:
  * `curl -X POST http://127.0.0.1:5000/api/test/public`
@@ -55,13 +43,21 @@ Test private/admin access (SHOULD FAIL):
  * `curl -X POST http://127.0.0.1:5000/api/test/private`
  * `curl -X POST http://127.0.0.1:5000/api/test/admin`
 
-Test authentication:
- * `curl -u username:password -X POST http://127.0.0.1:5000/api/test/private`
- * `curl -u username:password -X POST http://127.0.0.1:5000/api/test/admin`
+Test authentication (password in `your-service-name.txt`):
+ * `curl -u admin:XXXXXXXX -X POST http://127.0.0.1:5000/api/test/private`
+ * `curl -u admin:XXXXXXXX -X POST http://127.0.0.1:5000/api/test/admin`
+
+Add users:
+ * `curl -u admin:XXXXXXXX -d "user=user0&password=YYYY&priviledges=user" -X POST http://127.0.0.1:5000/api/user/add`
+ * `curl -u admin:XXXXXXXX -d "user=user1&password=YYYY&priviledges=user" -X POST http://127.0.0.1:5000/api/user/add`
+
+Delete user:
+ * `curl -u admin:XXXXXXXX -d "user=user1" -X POST http://127.0.0.1:5000/api/user/delete`
 
 Test tokens:
- * `curl -u username:password -X POST http://127.0.0.1:5000/api/user/token`
- * `curl -u token -X POST http://127.0.0.1:5000/api/test/private`
+ * `curl -u user0:YYYY -X POST http://127.0.0.1:5000/api/user/token`
+ * `curl -u TOKEN -X POST http://127.0.0.1:5000/api/test/private`
+ * `curl -d "token=TOKEN" -X POST http://127.0.0.1:5000/api/test/private`
 
 ### Deploy
 

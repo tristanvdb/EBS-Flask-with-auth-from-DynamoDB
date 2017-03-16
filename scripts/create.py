@@ -54,8 +54,8 @@ if __name__ == '__main__':
 		exit(1)
 
 	# Check if user already exists
-	service = services.get_item(Key={ 'service' : args.service_name , 'user' : args.admin_username })
-	if 'Item' in service:
+	identity = identities.get_item(Key={ 'service' : args.service_name , 'user' : args.admin_username })
+	if 'Item' in identity:
 		print 'User {} for service {} already exists!'.format(args.admin_username, args.service_name)
 		exit(1)
 
@@ -98,7 +98,7 @@ if __name__ == '__main__':
 	for module in args.modules:
 		report.append('                    {}'.format(module))
 	with open('{}.txt'.format(args.service_name),'w') as F:
-		F.writeln('\n'.join(report))
+		F.write('\n'.join(report) + '\n')
 
 	print 'Service description saved in {}.txt.'
 	print 'Warning: it contains the administrator password!'
