@@ -11,14 +11,18 @@ class Server(flask.Flask):
 	def __init__(self):
 		# Connection to AWS 
 		aws_profile = os.environ.get('AWS_PROFILE')
-		aws_region = os.environ.get('AWS_REGION', 'us-east-1')
-		if aws_profile is None:
+		aws_region = os.environ.get('AWS_REGION')
+		if not aws_profile is None and not aws_region is None:
+			aws = boto3.session.Session(profile_name=aws_profile, region_name=aws_region)
+		elif not aws_profile is None:
+			aws = boto3.session.Session(profile_name=aws_profile)
+		elif not aws_region is None:
 			aws = boto3.session.Session(region_name=aws_region)
 		else:
-			aws = boto3.session.Session(profile_name=aws_profile, region_name=aws_region)
+			aws = boto3.session.Session()
 
 		# Get service descrition
-		service = os.environ.get('SERVER_SERVICE')
+		service = os.environ.get('EBAUTH_SERVICE_NAME')
 		assert not service is None
 		service = aws.resource('dynamodb').Table('services').get_item(Key={ 'service' : service })
 		assert 'Item' in service
@@ -106,15 +110,15 @@ class Server(flask.Flask):
 
 	def add_user(self):
 		if not 'user' in flask.request.form:
-			return 'Missing field: "user"'
+			return { 'error' : 'Missing field: "user"' }
 		else:
 			user = flask.request.form['user']
 			identity = self.identities.get_item(Key={ 'service' : self.service['service'] , 'user': user })
 			if 'Item' in identity:
-				return 'User {} already exist!'.format(user)
+				return { 'error' : 'User {} already exist!'.format(user) }
 
 		if not 'password' in flask.request.form:
-			return 'Missing field: "password"'
+			return { 'error' : 'Missing field: "password"' }
 		else:
 			password = self.salted(flask.request.form['password'])
 
@@ -129,9 +133,9 @@ class Server(flask.Flask):
 
 	def delete_user(self):
 		if not 'user' in flask.request.form:
-			return 'Missing field: "user"'
+			return { 'error' : 'Missing field: "user"' }
 
-		self.identities.delete_item(Key={ 'service' : self.service['service'] , 'user': user })
+		self.identities.delete_item(Key={ 'service' : self.service['service'] , 'user': flask.request.form['user'] })
 
-		return { 'user' : user }
+		return { 'user' : flask.request.form['user'] }
 

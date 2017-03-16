@@ -26,6 +26,9 @@ if __name__ == '__main__':
 
 	parser.add_argument('--modules', type=lambda v: v.split(','), default=[ 'EBauth.api.user' , 'EBauth.api.test' ], metavar='LIST', help='Comma separated list of module to load (default: "EBauth.api.user" and "EBauth.api.test")')
 
+	parser.add_argument('--aws-profile', type=str, default=os.environ.get('AWS_PROFILE', None),       metavar='profile', help='AWS profile to use (Default: env[AWS_PROFILE])')
+	parser.add_argument('--aws-region',  type=str, default=os.environ.get('AWS_REGION', 'us-east-1'), metavar='region',  help='AWS region to use (Default: env[AWS_REGION])')
+
 	args = parser.parse_args()
 
 	if args.password_secret is None:
@@ -36,12 +39,14 @@ if __name__ == '__main__':
 		args.admin_password = random_str(8)
 
 	# AWS connection
-	aws_profile = os.environ.get('SERVER_AWS_PROFILE')
-	aws_region = os.environ.get('SERVER_AWS_REGION', 'us-east-1')
-	if aws_profile is None:
-		aws = boto3.session.Session(region_name=aws_region)
+	if not args.aws_profile is None and not args.aws_region is None:
+		aws = boto3.session.Session(profile_name=args.aws_profile, region_name=args.aws_region)
+	elif not args.aws_profile is None:
+		aws = boto3.session.Session(profile_name=args.aws_profile)
+	elif not args.aws_region is None:
+		aws = boto3.session.Session(region_name=args.aws_region)
 	else:
-		aws = boto3.session.Session(profile_name=aws_profile, region_name=aws_region)
+		aws = boto3.session.Session()
 
 	# DynamoDB tables
 	services = aws.resource('dynamodb').Table('services')
@@ -59,6 +64,8 @@ if __name__ == '__main__':
 		print 'User {} for service {} already exists!'.format(args.admin_username, args.service_name)
 		exit(1)
 
+	print '# Registering service {}:'.format(args.service_name)
+
 	# Add service to services table
 	services.put_item(Item={
 	    'service' : args.service_name,
@@ -71,7 +78,7 @@ if __name__ == '__main__':
 	    },
 	    'modules' : args.modules
 	})
-	print 'User {} for service {} added to identities table.'.format(args.admin_username, args.service_name)
+	print '## Added to services table.'.format(args.service_name)
 
 	# Add administrator for service
 	identities.put_item(Item={
@@ -80,7 +87,7 @@ if __name__ == '__main__':
 	    'password' : md5.new(args.admin_password + args.password_secret).hexdigest(),
 	    'priviledges' : [ 'user' , 'admin' ]
 	})
-	print 'Service {} added to services table.'.format(args.service_name)
+	print '## Administrator added to identities table.'.format(args.admin_username, args.service_name)
 
 	# Create service description
 	report = [
@@ -100,6 +107,6 @@ if __name__ == '__main__':
 	with open('{}.txt'.format(args.service_name),'w') as F:
 		F.write('\n'.join(report) + '\n')
 
-	print 'Service description saved in {}.txt.'
-	print 'Warning: it contains the administrator password!'
+	print '## Service description saved in {}.txt.'.format(args.service_name)
+	print '## Warning: it contains the administrator password!'
 
