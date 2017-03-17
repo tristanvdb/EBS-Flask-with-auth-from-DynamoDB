@@ -24,7 +24,7 @@ if __name__ == '__main__':
 	parser.add_argument('--admin-username', type=str, default='admin', metavar='username', help='Username for the administrator (default: "admin")')
 	parser.add_argument('--admin-password', type=str, default=None,    metavar='password', help='Password for the administrator (default: random string of length 8)')
 
-	parser.add_argument('--modules', type=lambda v: v.split(','), default=[ 'EBauth.api.user' , 'EBauth.api.test' ], metavar='LIST', help='Comma separated list of module to load (default: "EBauth.api.user" and "EBauth.api.test")')
+	parser.add_argument('--modules', type=lambda v: v.split(','), default=[ 'tests.users' ], metavar='LIST', help='Comma separated list of module to load (default: "tests.users")')
 
 	parser.add_argument('--aws-profile', type=str, default=os.environ.get('AWS_PROFILE', None),       metavar='profile', help='AWS profile to use (Default: env[AWS_PROFILE])')
 	parser.add_argument('--aws-region',  type=str, default=os.environ.get('AWS_REGION', 'us-east-1'), metavar='region',  help='AWS region to use (Default: env[AWS_REGION])')

@@ -25,8 +25,8 @@ def dynamodb_table(dynamodb, name, schema):
 if __name__ == '__main__':
 	parser = argparse.ArgumentParser()
 
-	parser.add_argument('--aws-profile', type=str, default=os.environ.get('AWS_PROFILE', None),       metavar='profile', help='AWS profile to use (Default: env[AWS_PROFILE])')
-	parser.add_argument('--aws-region',  type=str, default=os.environ.get('AWS_REGION', 'us-east-1'), metavar='region',  help='AWS region to use (Default: env[AWS_REGION])')
+	parser.add_argument('--aws-profile', type=str, default=os.environ.get('AWS_PROFILE', None), metavar='profile', help='AWS profile to use (Default: env[AWS_PROFILE])')
+	parser.add_argument('--aws-region',  type=str, default=os.environ.get('AWS_REGION', None),  metavar='region',  help='AWS region to use (Default: env[AWS_REGION])')
 
 	args = parser.parse_args()
 
@@ -50,6 +50,18 @@ if __name__ == '__main__':
 
 	tbl_arns.update(dynamodb_table(dynamodb, 'services',   [ ( 'service' , 'S' , 'HASH' ) ] ))
 	tbl_arns.update(dynamodb_table(dynamodb, 'identities', [ ( 'service' , 'S' , 'HASH' ) , ( 'user' , 'S' , 'RANGE' ) ] ))
+
+	# S3
+
+	s3 = aws.client('s3')
+
+	bucket_name = 'EBauth-{}'.format(acctID).lower()
+	try:
+		s3.head_bucket(Bucket=bucket_name)
+		print 'S3 Bucket `{}` already exists.'.format(bucket_name)
+	except:
+		s3.create_bucket(Bucket=bucket_name) # FIXME all buckets are created in us-east-1...
+		print 'S3 Bucket `{}` created.'.format(bucket_name)
 
 	# IAM
 
@@ -104,5 +116,9 @@ if __name__ == '__main__':
 
 	ebs = aws.client('elasticbeanstalk')
 
-	## `EBauth` application TODO
+	try:
+		ebs.create_application(ApplicationName='EBauth-application')
+		print 'EBS application `EBauth` created.'
+	except:
+		print 'EBS application `EBauth` already exist.'
 

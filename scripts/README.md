@@ -7,7 +7,7 @@ Scripts
 
 Setup local environment (VirtualEnv).
 ```
-Usage: scripts/setup-local.sh
+Usage: scripts/local-setup.sh
 ```
 
 NOTE: You can specify AWS environment directly in your virtual environment:
@@ -15,11 +15,25 @@ NOTE: You can specify AWS environment directly in your virtual environment:
 echo -e "\nexport AWS_PROFILE=your-profile AWS_REGION=some-region" >> .venv/bin/activate
 ```
 
+#### TODO
+
+Use python and override of `EBauth` prefix.
+
 ### AWS
 
 A script is provided to create the various DynamoDB tables, IAM roles and policies, and EBS EBauth application:
 ```
-Usage: scripts/setup-aws.py [--aws-profile profile] [--aws-region region]
+Usage: scripts/aws-setup.py [--aws-profile profile] [--aws-region region]
+
+Arguments:
+  --aws-profile         AWS profile to use (Default: env[AWS_PROFILE])
+  --aws-region          AWS region to use (Default: env[AWS_REGION])
+```
+
+#### Teardown AWS setup
+
+```
+Usage: scripts/aws-teardown.py [--aws-profile profile] [--aws-region region]
 
 Arguments:
   --aws-profile         AWS profile to use (Default: env[AWS_PROFILE])

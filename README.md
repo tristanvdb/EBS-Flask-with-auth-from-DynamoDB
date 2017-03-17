@@ -10,15 +10,3 @@ The goal is to provide authentication in Flask applications deployed using Amazo
  * `virtualenv`
  * `jq` (for tests)
 
-### Deploy
-
-TODO
-
-```
-zip EBS-Flask-with-auth-from-DynamoDB.zip .ebextensions/python.config requirements.txt
-zip EBS-Flask-with-auth-from-DynamoDB.zip server/*.py server/api/*.py
-zip EBS-Flask-with-auth-from-DynamoDB.zip static/...
-zip EBS-Flask-with-auth-from-DynamoDB.zip templates/...
-```
-
-
