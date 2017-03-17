@@ -1,7 +1,8 @@
-EBS: Flask server with authentication through DynamoDB
-======================================================
+EBauth
+======
 
-This code shows how to deploy a Flask server on AWS' Elastic Beanstalk. This server provides authentication through DynamoDB. It also implement token based authentication.
+EBauth is a Flask server that uses DynamoDB to store the service's description and the users of this service.
+The goal is to provide authentication in Flask applications deployed using Amazon's Elastic Beanstalk.
 
 ## Dependencies
 

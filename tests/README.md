@@ -1,17 +1,5 @@
-Tests scripts
-=============
-
-## Local Environment
-
-Setup test environment (VirtualEnv).
-```
-tests/setup.sh
-```
-
-NOTE: You can specify AWS environment directly in your virtual environment:
-```
-echo -e "\nexport AWS_PROFILE=your-profile AWS_REGION=some-region" >> .venv/bin/activate
-```
+Testing
+=======
 
 ## Test Service
 

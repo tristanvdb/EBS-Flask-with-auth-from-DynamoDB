@@ -1,6 +1,31 @@
 Scripts
 =======
 
+## Setup
+
+### Local
+
+Setup local environment (VirtualEnv).
+```
+Usage: scripts/setup-local.sh
+```
+
+NOTE: You can specify AWS environment directly in your virtual environment:
+```
+echo -e "\nexport AWS_PROFILE=your-profile AWS_REGION=some-region" >> .venv/bin/activate
+```
+
+### AWS
+
+A script is provided to create the various DynamoDB tables, IAM roles and policies, and EBS EBauth application:
+```
+Usage: scripts/setup-aws.py [--aws-profile profile] [--aws-region region]
+
+Arguments:
+  --aws-profile         AWS profile to use (Default: env[AWS_PROFILE])
+  --aws-region          AWS region to use (Default: env[AWS_REGION])
+```
+
 ## Create
 
 This script creates the service in the DynamoDB tables:
@@ -8,12 +33,12 @@ This script creates the service in the DynamoDB tables:
  * administrator in the `identities` table
 
 ```
-Usage: create.py [-h] --service-name name
-                 [--password-secret secret]
-                 [--token-secret secret] [--token-timeout seconds]
-                 [--admin-username username] [--admin-password password]
-                 [--modules LIST]
-                 [--aws-profile profile] [--aws-region region]
+Usage: scripts/create.py [-h] --service-name name
+                         [--password-secret secret]
+                         [--token-secret secret] [--token-timeout seconds]
+                         [--admin-username username] [--admin-password password]
+                         [--modules LIST]
+                         [--aws-profile profile] [--aws-region region]
 
 Arguments:
   --service-name        Name of the service being created
@@ -39,8 +64,8 @@ This script removes the service from the DynamoDB tables:
  * all users from the `identities` table
 
 ```
-Usage: remove.py --service-name name
-                 [--aws-profile profile] [--aws-region region]
+Usage: scripts/remove.py --service-name name
+                         [--aws-profile profile] [--aws-region region]
 
 Arguments:
   --service-name        Name of the service being created
@@ -54,9 +79,9 @@ Arguments:
 This script is launch an `EBauth` server locally. It is also the entry point for the default EBS.
 
 ```
-Usage: wsgi.py [--service-name name]
-               [--debug]
-               [--aws-profile profile] [--aws-region region]
+Usage: scripts/wsgi.py [--service-name name]
+                       [--debug]
+                       [--aws-profile profile] [--aws-region region]
 
 Arguments:
   --service-name        Name of the service being created (Default: env[EBAUTH_SERVICE_NAME])
