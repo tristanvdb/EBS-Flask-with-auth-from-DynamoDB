@@ -67,11 +67,11 @@ if __name__ == '__main__':
 
 	iam = aws.client('iam')
 	try:
-		role = iam.get_role(RoleName='EBauth-instance')
-		print 'IAM Role `EBauth-instance` already exists.'
+		role = iam.get_role(RoleName='EBauth-instance-role')
+		print 'IAM Role `EBauth-instance-role` already exists.'
 	except:
 		role = iam.create_role(
-		    RoleName='EBauth-instance', 
+		    RoleName='EBauth-instance-role', 
 		    AssumeRolePolicyDocument=json.dumps({
 		        "Version": "2012-10-17",
 		        "Statement": [
@@ -84,15 +84,15 @@ if __name__ == '__main__':
 		        ]
 		    })
 		)
-		print 'IAM Role `EBauth-instance` created.'
+		print 'IAM Role `EBauth-instance-role` created.'
 	role_arn = role['Role']['Arn']
 
 	try:
-		policy = iam.get_policy(PolicyArn='arn:aws:iam::{}:policy/{}'.format(acctID, 'EBauth-instance-tables-access'))
-		print 'IAM Policy `EBauth-instance-tables-access` already exists.'
+		policy = iam.get_policy(PolicyArn='arn:aws:iam::{}:policy/{}'.format(acctID, 'EBauth-instance-policy-tables-access'))
+		print 'IAM Policy `EBauth-instance-policy-tables-access` already exists.'
 	except Exception as e:
 		policy = iam.create_policy(
-		    PolicyName='EBauth-instance-tables-access',
+		    PolicyName='EBauth-instance-policy-tables-access',
 		    PolicyDocument=json.dumps({
 		        "Version": "2012-10-17",
 		        "Statement": [
@@ -108,9 +108,18 @@ if __name__ == '__main__':
 		        ]
 		    })
 		)
-		print 'IAM Policy `EBauth-instance-tables-access` created.'
+		print 'IAM Policy `EBauth-instance-policy-tables-access` created.'
 
-	response = iam.attach_role_policy(RoleName='EBauth-instance', PolicyArn=policy['Policy']['Arn'])
+	iam.attach_role_policy(RoleName='EBauth-instance-role', PolicyArn=policy['Policy']['Arn'])
+
+	try:
+		iam.get_instance_profile(InstanceProfileName='EBauth-instance-profile')
+
+		print 'IAM Instance Profile `EBauth-instance-profile` already exists.'
+	except:
+		iam.create_instance_profile(InstanceProfileName='EBauth-instance-profile')
+		print 'IAM Instance Profile `EBauth-instance-profile` created.'
+	iam.add_role_to_instance_profile(InstanceProfileName='EBauth-instance-profile', RoleName='EBauth-instance-role')
 
 	# EBS
 

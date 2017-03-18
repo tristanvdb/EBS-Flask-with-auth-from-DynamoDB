@@ -1,5 +1,4 @@
 
-
 if __name__ == "__main__":
 	import os
 	import argparse
@@ -9,7 +8,7 @@ if __name__ == "__main__":
 	parser.add_argument('--service-name', type=str, default=os.environ.get('EBAUTH_SERVICE_NAME', None), metavar='name', help='Name of the service being created (Default: env[EBAUTH_SERVICE_NAME])')
 
 	parser.add_argument('--aws-profile', type=str, default=os.environ.get('AWS_PROFILE', None),       metavar='profile', help='AWS profile to use (Default: env[AWS_PROFILE])')
-	parser.add_argument('--aws-region',  type=str, default=os.environ.get('AWS_REGION', 'us-east-1'), metavar='region',  help='AWS region to use (Default: env[AWS_REGION])')
+	parser.add_argument('--aws-region',  type=str, default=os.environ.get('AWS_REGION', None), metavar='region',  help='AWS region to use (Default: env[AWS_REGION])')
 
 	parser.add_argument('--debug', action='store_true', help='Launch Flask in debug mode')
 
@@ -20,10 +19,10 @@ if __name__ == "__main__":
 	os.environ['AWS_REGION'] = args.aws_region
 
 import importlib
-import EBauth
-for module in EBauth.application.service['modules']:
+from EBauth import application
+for module in application.service['modules']:
 	importlib.import_module(module)
 
 if __name__ == "__main__":
-	EBauth.application.run(debug=args.debug)
+	application.run(debug=args.debug)
 

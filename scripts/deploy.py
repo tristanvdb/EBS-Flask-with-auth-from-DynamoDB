@@ -15,7 +15,7 @@ if __name__ == '__main__':
 	parser.add_argument('--version',      type=str, required=True, metavar='version', help='Application\'s version tag')
 
 	parser.add_argument('--aws-profile', type=str, default=os.environ.get('AWS_PROFILE', None),       metavar='profile', help='AWS profile to use (Default: env[AWS_PROFILE])')
-	parser.add_argument('--aws-region',  type=str, default=os.environ.get('AWS_REGION', 'us-east-1'), metavar='region',  help='AWS region to use (Default: env[AWS_REGION])')
+	parser.add_argument('--aws-region',  type=str, default=os.environ.get('AWS_REGION', None), metavar='region',  help='AWS region to use (Default: env[AWS_REGION])')
 
 	parser.add_argument('--extra-files', nargs='*',  type=str, help='Files required by the service\'s modules.')
 
@@ -52,18 +52,16 @@ if __name__ == '__main__':
 
 	# Check if environement already exists (TODO)
 
-	environments = ebs.describe_environments( ApplicationName='EBauth-application', VersionLabel=applabel, EnvironmentNames=[ appname ] )
+	environments = ebs.describe_environments( ApplicationName='EBauth-application', VersionLabel=applabel, EnvironmentNames=[ appname ], IncludeDeleted=False )
 	if len(environments['Environments']) > 0:
 		assert len(environments['Environments']) == 1
 		if environments['Environments'][0]['Status'].upper() == 'TERMINATED':
 			pass
 		elif args.force:
-			deltime = datetime.datetime.now()
 			ebs.terminate_environment(EnvironmentName=appname, TerminateResources=True, ForceTerminate=True)
 			while True:
-				environments = ebs.describe_environments( ApplicationName='EBauth-application', VersionLabel=applabel, EnvironmentNames=[ appname ], IncludedDeletedBackTo=deltime )
-				assert len(environments['Environments']) == 1
-				if environments['Environments'][0]['Status'].upper() == 'TERMINATED':
+				environments = ebs.describe_environments( ApplicationName='EBauth-application', VersionLabel=applabel, EnvironmentNames=[ appname ], IncludeDeleted=False )
+				if len(environments['Environments']) == 0:
 					break
 
 				print 'Waiting for environment {} to be terminated ({})'.format(applabel,  environments['Environments'][0]['Status'])
@@ -140,16 +138,25 @@ if __name__ == '__main__':
 	    SolutionStackName="64bit Amazon Linux 2016.09 v2.3.2 running Python 2.7",
 	    OptionSettings=[
 	        {
+	            'Namespace': 'aws:autoscaling:launchconfiguration',
+	            'ResourceName': 'AWSEBAutoScalingLaunchConfiguration',
+                    'OptionName': 'IamInstanceProfile',
+	            'Value': 'EBauth-instance-profile'
+	        },{
 	            'Namespace': 'aws:elasticbeanstalk:application:environment',
 	            'OptionName': 'EBAUTH_SERVICE_NAME',
 	            'Value': args.service_name
-	        },
+	        },{
+	            'Namespace': 'aws:elasticbeanstalk:application:environment',
+	            'OptionName': 'AWS_REGION',
+	            'Value': aws.region_name
+	        }
 	    ]
 	)
 
 
 	while True:
-		environments = ebs.describe_environments( ApplicationName='EBauth-application', VersionLabel=applabel, EnvironmentNames=[ appname ] )
+		environments = ebs.describe_environments( ApplicationName='EBauth-application', VersionLabel=applabel, EnvironmentNames=[ appname ], IncludeDeleted=False )
 		assert len(environments['Environments']) == 1
 		if environments['Environments'][0]['Status'].upper() == 'READY':
 			break
