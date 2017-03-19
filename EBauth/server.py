@@ -1,6 +1,7 @@
 
 import os
 import md5
+import json
 import boto3
 import flask
 import functools
@@ -45,30 +46,40 @@ class Server(flask.Flask):
 
 	def __get_identity(self):
 		if 'token' in flask.request.form:
+#			print '[__get_identity] Token found in HTTP data'
 			token = flask.request.form['token']
 			auth  = None
 		elif not flask.request.authorization is None:
+#			print '[__get_identity] Authentication data found'
 			auth = flask.request.authorization
 			token = auth.username
 		else:
+#			print '[__get_identity] No authentication data found'
 			return None
 
 		try:
 			# Try to decode the token/username
-			return self.serializer.loads(token)
+			identity = self.serializer.loads(token)
+#			print '[__get_identity] Decoded token: {}'.format(json.dumps(identity))
+			return identity
 
 		except itsdangerous.SignatureExpired:
 			# Expired token
+#			print '[__get_identity] Expired token'
 			return None
 
 		except itsdangerous.BadSignature:
 			# Not a valid token
+#			print '[__get_identity] Not a valid token'
 			if not auth is None:
+#				print '[__get_identity] Try authentication from DynamoDB'
 				# check identities table
 				identity = self.identities.get_item(Key={ 'service' : self.service['service'] , 'user': auth.username })
 				if 'Item' in identity and self.salted(auth.password) == identity['Item']['password']:
 					# User exists and password is correct
-					return { 'user' : identity['Item']['user'] , 'priviledges' : identity['Item']['priviledges'] }
+					identity = { 'user' : identity['Item']['user'] , 'priviledges' : identity['Item']['priviledges'] }
+#					print '[__get_identity] Found: {}'.format(json.dumps(identity))
+					return identity
 
 			# No auth field, user not found, or password does not match
 			return None
